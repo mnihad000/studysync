@@ -1,9 +1,13 @@
 import {View, Text, StyleSheet} from 'react-native';
+import upcoming from "./homepage_components/upcoming";
+import Upcoming from './homepage_components/upcoming';
+
 
 export default function HomeScreen(){
     return(
-        <View style= {StyleSheet.container}>
-            <Text> Home Screen</Text>
+        <View style= {styles.container}>
+            <Text></Text>
+        <Upcoming/>
 
         </View>
     );
