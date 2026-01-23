@@ -49,16 +49,24 @@ export default function HomeScreen({ navigation }) {
   const [groupName, setGroupName] = useState('');
   const [dailyMinutes, setDailyMinutes] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [joinError, setJoinError] = useState('');
 
   const handleCreateGroup = () => {
+    const name = groupName.trim();
     const minutesNumber = Number(dailyMinutes);
-    if (!groupName.trim() || !minutesNumber || minutesNumber <= 0) {
+    if (!name) {
+      setCreateError('Enter a group name.');
+      return;
+    }
+    if (!Number.isFinite(minutesNumber) || minutesNumber <= 0) {
+      setCreateError('Enter a valid number of minutes.');
       return;
     }
 
     const newGroup = {
       id: `g${Date.now()}`,
-      name: groupName.trim(),
+      name,
       dailyMinutes: minutesNumber,
       streakDays: 0,
       todayMinutes: 0,
@@ -69,16 +77,19 @@ export default function HomeScreen({ navigation }) {
     setGroups((prev) => [newGroup, ...prev]);
     setGroupName('');
     setDailyMinutes('');
+    setCreateError('');
   };
 
   const handleJoinGroup = () => {
-    if (!inviteCode.trim()) {
+    const code = inviteCode.trim();
+    if (!code) {
+      setJoinError('Enter an invite code.');
       return;
     }
 
     const joinedGroup = {
       id: `j${Date.now()}`,
-      name: `Joined Group (${inviteCode.trim().toUpperCase()})`,
+      name: `Joined Group (${code.toUpperCase()})`,
       dailyMinutes: 30,
       streakDays: 0,
       todayMinutes: 0,
@@ -88,6 +99,7 @@ export default function HomeScreen({ navigation }) {
 
     setGroups((prev) => [joinedGroup, ...prev]);
     setInviteCode('');
+    setJoinError('');
   };
 
   return (
@@ -169,6 +181,9 @@ export default function HomeScreen({ navigation }) {
           >
             <Text style={styles.primaryButtonText}>Create Group</Text>
           </Pressable>
+          {createError ? (
+            <Text style={styles.errorText}>{createError}</Text>
+          ) : null}
         </View>
 
         <View style={styles.section}>
@@ -188,6 +203,9 @@ export default function HomeScreen({ navigation }) {
           >
             <Text style={styles.outlineButtonText}>Join Group</Text>
           </Pressable>
+          {joinError ? (
+            <Text style={styles.errorText}>{joinError}</Text>
+          ) : null}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -316,5 +334,9 @@ const styles = StyleSheet.create({
     color: MUTED_ACCENT,
     fontWeight: '600',
     fontSize: 14,
+  },
+  errorText: {
+    color: '#8A2D2D',
+    fontSize: 12,
   },
 });
