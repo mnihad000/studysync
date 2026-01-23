@@ -1,10 +1,24 @@
 import { NavigationContainer } from '@react-navigation/native';
-import RootNavigator from './navigation/RootNavigator';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomeScreen from './screens/HomeScreen';
+import ProfileScreen from './screens/ProfileScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <RootNavigator />
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: '#F7F7F3' },
+          headerTitleStyle: { color: '#222' },
+          headerTintColor: '#222',
+          contentStyle: { backgroundColor: '#F7F7F3' },
+        }}
+      >
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
