@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env files
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# build outputs
+backend/target/
+frontend/dist/
+frontend/web-build/
+coverage/
+
+# expo
+frontend/.expo/
+frontend/.metro-health-check*
+
+# supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# logs and OS/editor files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
