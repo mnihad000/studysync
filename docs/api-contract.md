@@ -1,9 +1,15 @@
 # StudyStreaks API Contract (v1)
 
+All endpoints are under `/v1` and require:
+
+- Header: `Authorization: Bearer <supabase_access_token>`
+
 ## GET /v1/me/groups
+
 Returns all groups the current user belongs to.
 
 ### Response
+
 ```json
 {
   "groups": [
@@ -19,18 +25,24 @@ Returns all groups the current user belongs to.
     }
   ]
 }
+```
 
-POST /v1/groups
+## POST /v1/groups
 
-Creates a new group.
+Creates a new group and adds the current user as a member.
 
-Request
+### Request
+
+```json
 {
   "name": "Calculus Crew",
   "dailyMinutes": 45
 }
+```
 
-Response
+### Response
+
+```json
 {
   "id": "grp_123",
   "name": "Calculus Crew",
@@ -41,17 +53,23 @@ Response
   "membersTotal": 1,
   "inviteCode": "ABC123"
 }
+```
 
-POST /v1/groups/join
+## POST /v1/groups/join
 
 Join a group by invite code.
 
-Request
+### Request
+
+```json
 {
   "inviteCode": "ABC123"
 }
+```
 
-Response
+### Response
+
+```json
 {
   "id": "grp_123",
   "name": "Calculus Crew",
@@ -62,3 +80,4 @@ Response
   "membersTotal": 5,
   "inviteCode": "ABC123"
 }
+```

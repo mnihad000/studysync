@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,51 +8,59 @@ import {
   Pressable,
   SafeAreaView,
 } from 'react-native';
+import { apiRequest } from '../lib/api';
 
 const MUTED_ACCENT = '#6B7B6A';
 const BG = '#F7F7F3';
 const TEXT = '#222';
 const BORDER = '#D9D9D3';
 
-const initialGroups = [
-  {
-    id: 'g1',
-    name: 'Calculus Crew',
-    dailyMinutes: 45,
-    streakDays: 12,
-    todayMinutes: 30,
-    membersMet: 3,
-    membersTotal: 5,
-  },
-  {
-    id: 'g2',
-    name: 'Morning Reading',
-    dailyMinutes: 30,
-    streakDays: 7,
-    todayMinutes: 15,
-    membersMet: 2,
-    membersTotal: 3,
-  },
-  {
-    id: 'g3',
-    name: 'Chem Lab Prep',
-    dailyMinutes: 60,
-    streakDays: 21,
-    todayMinutes: 60,
-    membersMet: 4,
-    membersTotal: 4,
-  },
-];
-
-export default function HomeScreen({ navigation }) {
-  const [groups, setGroups] = useState(initialGroups);
+export default function HomeScreen({ navigation, session, authReady }) {
+  const userId = session?.user?.id ?? null;
+  const accessToken = session?.access_token ?? null;
+  const [groups, setGroups] = useState([]);
+  const [groupsError, setGroupsError] = useState('');
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true);
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+  const [isSubmittingJoin, setIsSubmittingJoin] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [dailyMinutes, setDailyMinutes] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [createError, setCreateError] = useState('');
   const [joinError, setJoinError] = useState('');
 
-  const handleCreateGroup = () => {
+  const loadGroups = async () => {
+    if (!userId) {
+      setGroups([]);
+      setGroupsError('Sign in from Profile to load your groups.');
+      setIsLoadingGroups(false);
+      return;
+    }
+
+    setGroupsError('');
+    setIsLoadingGroups(true);
+    try {
+      const response = await apiRequest('/v1/me/groups', { accessToken });
+      setGroups(Array.isArray(response?.groups) ? response.groups : []);
+    } catch (error) {
+      setGroupsError(error.message || 'Unable to load groups.');
+    } finally {
+      setIsLoadingGroups(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authReady) {
+      loadGroups();
+    }
+  }, [authReady, userId, accessToken]);
+
+  const handleCreateGroup = async () => {
+    if (!userId) {
+      setCreateError('Sign in from Profile before creating a group.');
+      return;
+    }
+
     const name = groupName.trim();
     const minutesNumber = Number(dailyMinutes);
     if (!name) {
@@ -64,42 +72,51 @@ export default function HomeScreen({ navigation }) {
       return;
     }
 
-    const newGroup = {
-      id: `g${Date.now()}`,
-      name,
-      dailyMinutes: minutesNumber,
-      streakDays: 0,
-      todayMinutes: 0,
-      membersMet: 1,
-      membersTotal: 1,
-    };
-
-    setGroups((prev) => [newGroup, ...prev]);
-    setGroupName('');
-    setDailyMinutes('');
-    setCreateError('');
+    setIsSubmittingCreate(true);
+    try {
+      const newGroup = await apiRequest('/v1/groups', {
+        method: 'POST',
+        accessToken,
+        body: JSON.stringify({ name, dailyMinutes: minutesNumber }),
+      });
+      setGroups((prev) => [newGroup, ...prev]);
+      setGroupName('');
+      setDailyMinutes('');
+      setCreateError('');
+    } catch (error) {
+      setCreateError(error.message || 'Unable to create group.');
+    } finally {
+      setIsSubmittingCreate(false);
+    }
   };
 
-  const handleJoinGroup = () => {
+  const handleJoinGroup = async () => {
+    if (!userId) {
+      setJoinError('Sign in from Profile before joining a group.');
+      return;
+    }
+
     const code = inviteCode.trim();
     if (!code) {
       setJoinError('Enter an invite code.');
       return;
     }
 
-    const joinedGroup = {
-      id: `j${Date.now()}`,
-      name: `Joined Group (${code.toUpperCase()})`,
-      dailyMinutes: 30,
-      streakDays: 0,
-      todayMinutes: 0,
-      membersMet: 0,
-      membersTotal: 1,
-    };
-
-    setGroups((prev) => [joinedGroup, ...prev]);
-    setInviteCode('');
-    setJoinError('');
+    setIsSubmittingJoin(true);
+    try {
+      const joinedGroup = await apiRequest('/v1/groups/join', {
+        method: 'POST',
+        accessToken,
+        body: JSON.stringify({ inviteCode: code }),
+      });
+      setGroups((prev) => [joinedGroup, ...prev.filter((g) => g.id !== joinedGroup.id)]);
+      setInviteCode('');
+      setJoinError('');
+    } catch (error) {
+      setJoinError(error.message || 'Unable to join group.');
+    } finally {
+      setIsSubmittingJoin(false);
+    }
   };
 
   return (
@@ -121,6 +138,18 @@ export default function HomeScreen({ navigation }) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your Groups</Text>
+          {isLoadingGroups ? <Text style={styles.infoText}>Loading groups...</Text> : null}
+          {!isLoadingGroups && groupsError ? (
+            <View style={styles.inlineRow}>
+              <Text style={styles.errorText}>{groupsError}</Text>
+              <Pressable onPress={loadGroups} style={styles.retryButton}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          {!isLoadingGroups && !groupsError && groups.length === 0 ? (
+            <Text style={styles.infoText}>No groups yet. Create or join one below.</Text>
+          ) : null}
           {groups.map((group) => {
             const progress = Math.min(
               100,
@@ -177,9 +206,12 @@ export default function HomeScreen({ navigation }) {
           <Pressable
             accessibilityRole="button"
             onPress={handleCreateGroup}
-            style={styles.primaryButton}
+            style={[styles.primaryButton, isSubmittingCreate && styles.buttonDisabled]}
+            disabled={isSubmittingCreate}
           >
-            <Text style={styles.primaryButtonText}>Create Group</Text>
+            <Text style={styles.primaryButtonText}>
+              {isSubmittingCreate ? 'Creating...' : 'Create Group'}
+            </Text>
           </Pressable>
           {createError ? (
             <Text style={styles.errorText}>{createError}</Text>
@@ -199,9 +231,12 @@ export default function HomeScreen({ navigation }) {
           <Pressable
             accessibilityRole="button"
             onPress={handleJoinGroup}
-            style={styles.outlineButton}
+            style={[styles.outlineButton, isSubmittingJoin && styles.buttonDisabled]}
+            disabled={isSubmittingJoin}
           >
-            <Text style={styles.outlineButtonText}>Join Group</Text>
+            <Text style={styles.outlineButtonText}>
+              {isSubmittingJoin ? 'Joining...' : 'Join Group'}
+            </Text>
           </Pressable>
           {joinError ? (
             <Text style={styles.errorText}>{joinError}</Text>
@@ -334,6 +369,32 @@ const styles = StyleSheet.create({
     color: MUTED_ACCENT,
     fontWeight: '600',
     fontSize: 14,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  infoText: {
+    color: '#555',
+    fontSize: 13,
+  },
+  inlineRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10,
+  },
+  retryButton: {
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#fff',
+  },
+  retryButtonText: {
+    color: TEXT,
+    fontSize: 12,
+    fontWeight: '600',
   },
   errorText: {
     color: '#8A2D2D',

@@ -1,21 +1,62 @@
-What has been completed so far
-Project scope and decisions
+StudySync – Project Roadmap
+1. Completed Work
+1.1 Project Scope and Decisions
 
-The MVP scope is finalized. The app has exactly two screens: Home and Profile.
-The Home screen is responsible for showing all group streak information and for creating or joining groups.
-The Profile screen exists as a placeholder and is not part of the MVP functionality.
+The MVP scope is finalized.
+
+The app has exactly two screens:
+
+Home
+
+Profile
+
+The Profile screen is a placeholder and not part of MVP functionality.
+
+No additional screens, tabs, or features are planned for MVP.
+
+1.2 Home Screen Responsibilities
+
+The Home screen is responsible for:
+
+Displaying all group streak information
+
+Creating new groups
+
+Joining existing groups
+
+1.3 Home Screen Features (MVP)
 
 The Home screen includes:
 
-A dashboard showing all groups the user belongs to
+A dashboard listing all groups the user belongs to
 
-Each group card displays group name, daily study minutes, today’s progress, streak days, and member progress
+Group cards that display:
 
-A create-group flow where users enter a group name and daily minutes
+Group name
 
-A join-group flow using an invite code
+Daily study minutes
 
-The following are explicitly out of scope for the MVP:
+Today’s progress
+
+Streak days
+
+Members met goal
+
+Total members
+
+A create-group flow:
+
+Input: group name
+
+Input: daily study minutes
+
+A join-group flow:
+
+Input: invite code
+
+1.4 Explicitly Out of Scope (MVP)
+
+The following are not included in the MVP:
 
 Discovery
 
@@ -27,44 +68,71 @@ Analytics
 
 Additional screens or tabs
 
-Frontend (Expo / React Native)
+2. Frontend Status (Expo / React Native)
+2.1 App Setup
 
-The Expo app is set up and runs locally.
-React Navigation is configured with a stack containing Home and Profile screens.
-The Home UI is implemented and approved visually.
-The design is minimal, neutral, and utility-first. No aesthetic or “vibe-coded” styling.
+Expo app is initialized and runs locally.
 
-The Home screen currently:
+React Navigation is configured with a stack containing:
 
-Renders group cards using mock data
+Home
 
-Supports create and join flows using local state only
+Profile
 
-Does not depend on any backend APIs yet
+2.2 UI Implementation
 
-Repository and structure
+Home screen UI is fully implemented.
 
-The project is a Git repository and has been pushed to GitHub.
-A monorepo layout is established:
+Visual design is approved.
 
+Design philosophy:
+
+Minimal
+
+Neutral
+
+Utility-first
+
+No aesthetic or “vibe-coded” styling
+
+2.3 Current Home Screen Behavior
+
+Group cards are rendered using mock data
+
+Create and join flows work using local state only
+
+No backend APIs are currently consumed
+
+3. Repository and Project Structure
+3.1 Git and Repository
+
+Project is a Git repository.
+
+Repository is pushed to GitHub.
+
+3.2 Monorepo Layout
 studysync/
   frontend/
   backend/
   docs/
 
+3.3 Documentation Source of Truth
 
-The docs/ directory is the shared source of truth.
+The docs/ directory is the shared canonical source of truth for the project.
 
-Backend API design (contract only)
+4. Backend API Design (Contract Only)
+4.1 API Contract
 
-A real API contract has been written and committed at:
+A complete API contract is written and committed at:
 
 docs/api-contract.md
 
 
-This file is the canonical source of truth for the backend.
+This file is the canonical backend specification.
 
-The v1 API includes:
+4.2 v1 API Endpoints
+
+The v1 API includes only:
 
 GET /v1/me/groups
 
@@ -72,7 +140,9 @@ POST /v1/groups
 
 POST /v1/groups/join
 
-A single canonical Group object shape is defined and used everywhere:
+4.3 Canonical Group Object
+
+A single Group object shape is defined and used everywhere:
 
 id
 
@@ -90,50 +160,101 @@ membersTotal
 
 inviteCode
 
+4.4 Backend Implementation Status
+
 No backend code has been written yet.
-No authentication, database, or extra endpoints have been added prematurely.
 
-What remains to be done to publish the app
-Backend implementation (phase 1)
+No authentication has been added.
 
-Create a Spring Boot backend inside the backend/ folder.
-Implement only the endpoints defined in docs/api-contract.md.
-Use in-memory storage or H2 for now.
-Do not add authentication or extra features.
-Enable CORS so the Expo app can call the API during development.
+No database has been added.
 
-Frontend and backend integration
+No extra endpoints exist beyond the contract.
 
-Replace mock data in the Home screen with real fetch calls.
-Configure a base API URL that works on emulator and physical devices.
-Add loading states and basic error handling.
-Confirm create and join flows work end-to-end.
+5. Remaining Work to Publish the App
+5.1 Backend Implementation (Phase 1)
 
-Persistence and infrastructure (phase 2)
+Create a Spring Boot project inside backend/
 
-Add Docker Compose.
-Run PostgreSQL in Docker.
-Switch backend storage from in-memory/H2 to Postgres.
-Add database migrations.
+Implement only the endpoints defined in docs/api-contract.md
 
-Authentication (minimal viable)
+Use in-memory storage or H2
 
-Choose an authentication approach (email/password or magic link).
-Introduce user identity on the backend.
-Associate groups with users.
-Update GET /v1/me/groups to use authenticated user context.
+Do not add authentication or extra features
 
-Production readiness
+Enable CORS for Expo development
 
-Add environment variable configuration.
-Add basic logging.
-Prepare backend for deployment (Render, Railway, Fly.io, etc.).
+5.2 Frontend ↔ Backend Integration
 
-App Store and Play Store publishing
+Replace mock data with real API fetch calls
 
-Create app icon and splash screen.
-Set app name and bundle identifiers.
-Write a privacy policy.
-Set up TestFlight (iOS) and Play Console (Android).
-Capture store screenshots.
-Submit first production release.
+Configure a base API URL that works for:
+
+Emulator
+
+Physical devices
+
+Add loading states
+
+Add basic error handling
+
+Verify create and join flows work end-to-end
+
+5.3 Persistence and Infrastructure (Phase 2)
+
+Add Docker Compose
+
+Run PostgreSQL in Docker
+
+Migrate backend storage from in-memory/H2 to PostgreSQL
+
+Add database migrations
+
+5.4 Authentication (Minimal Viable)
+
+Choose authentication method:
+
+Email/password or
+
+Magic link
+
+Introduce user identity on the backend
+
+Associate groups with users
+
+Update GET /v1/me/groups to use authenticated user context
+
+5.5 Production Readiness
+
+Add environment variable configuration
+
+Add basic logging
+
+Prepare backend for deployment:
+
+Render
+
+Railway
+
+Fly.io
+
+or similar
+
+5.6 App Store & Play Store Publishing
+
+Create app icon
+
+Create splash screen
+
+Set app name and bundle identifiers
+
+Write a privacy policy
+
+Set up:
+
+TestFlight (iOS)
+
+Play Console (Android)
+
+Capture store screenshots
+
+Submit first production release
